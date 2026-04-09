@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz – Hygiène & Conservation des produits frais</title>
+<style>
+  @import url('data:text/css,');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --vert:    #1D6A2E;
+    --vert-l:  #E2EFDA;
+    --vert-b:  #2E8B47;
+    --ocre:    #7B3F00;
+    --ocre-l:  #FFF3CD;
+    --rouge:   #A32D2D;
+    --rouge-l: #FCEBEB;
+    --bleu:    #1F4E79;
+    --bleu-l:  #D6E4F0;
+    --gris:    #F5F5F3;
+    --gris-b:  #DEDDD8;
+    --texte:   #1A1A18;
+    --texte-s: #5A5A55;
+    --blanc:   #FFFFFF;
+    --radius:  12px;
+    --shadow:  0 4px 24px rgba(0,0,0,0.10);
+  }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #EFEFEB;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem 4rem;
+    color: var(--texte);
+  }
+
+  .page { width: 100%; max-width: 720px; }
+
+  /* ── EN-TÊTE ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  .header-badge {
+    display: inline-block;
+    background: var(--vert);
+    color: var(--blanc);
+    font-family: 'Arial Narrow', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: 2rem;
+    font-weight: normal;
+    color: var(--bleu);
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+  .header p {
+    font-size: 14px;
+    color: var(--texte-s);
+    font-style: italic;
+  }
+
+  /* ── BARRE DE PROGRESSION ── */
+  .prog-bar-wrap {
+    background: var(--blanc);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .prog-label { font-size: 13px; color: var(--texte-s); font-family: Arial, sans-serif; white-space: nowrap; }
+  .prog-track { flex: 1; height: 8px; background: var(--gris-b); border-radius: 4px; overflow: hidden; }
+  .prog-fill   { height: 100%; width: 0%; background: var(--vert); border-radius: 4px; transition: width .5s ease; }
+  .prog-score  { font-size: 18px; font-weight: bold; color: var(--texte); font-family: Arial, sans-serif; white-space: nowrap; }
+
+  /* ── CARTE QUESTION ── */
+  .q-card {
+    background: var(--blanc);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
+    border-left: 4px solid var(--gris-b);
+    transition: border-color .3s;
+  }
+  .q-card.answered { border-left-color: var(--vert); }
+  .q-card.answered-wrong { border-left-color: var(--rouge); }
+
+  .q-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 1.1rem;
+  }
+  .q-num {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: var(--texte-s);
+    background: var(--gris);
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+  .q-text { font-size: 16px; line-height: 1.55; color: var(--texte); }
+
+  /* ── OPTIONS ── */
+  .options { display: flex; flex-direction: column; gap: 8px; }
+
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border: 1.5px solid var(--gris-b);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    color: var(--texte);
+    background: var(--blanc);
+    text-align: left;
+    width: 100%;
+    transition: background .15s, border-color .15s, transform .1s;
+    line-height: 1.4;
+  }
+  .opt:hover:not([disabled]) { background: var(--gris); border-color: var(--bleu); transform: translateX(3px); }
+  .opt:active:not([disabled]) { transform: scale(0.99); }
+
+  .opt-letter {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gris-b);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: bold; font-family: Arial, sans-serif;
+    color: var(--texte-s);
+    flex-shrink: 0;
+    transition: background .2s, border-color .2s, color .2s;
+  }
+
+  .opt.correct          { background: var(--vert-l); border-color: var(--vert); color: var(--vert); }
+  .opt.correct .opt-letter { background: var(--vert); border-color: var(--vert); color: var(--blanc); }
+  .opt.wrong            { background: var(--rouge-l); border-color: var(--rouge); color: var(--rouge); }
+  .opt.wrong .opt-letter { background: var(--rouge); border-color: var(--rouge); color: var(--blanc); }
+  .opt.reveal           { background: var(--vert-l); border-color: var(--vert); color: var(--vert); opacity: .65; }
+  .opt.reveal .opt-letter { background: var(--vert); border-color: var(--vert); color: var(--blanc); }
+  .opt[disabled]        { cursor: default; transform: none !important; }
+
+  /* ── FEEDBACK ── */
+  .feedback {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    line-height: 1.55;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.ok   { background: var(--vert-l); color: var(--vert); border-left: 3px solid var(--vert); }
+  .feedback.ko   { background: var(--rouge-l); color: var(--rouge); border-left: 3px solid var(--rouge); }
+
+  .fb-icon { font-size: 15px; margin-right: 6px; }
+
+  /* ── RÉSULTAT FINAL ── */
+  .final {
+    display: none;
+    background: var(--blanc);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+  .final.show { display: block; }
+  .final-label { font-family: Arial, sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--texte-s); margin-bottom: 12px; }
+  .final-score { font-size: 56px; font-weight: normal; color: var(--bleu); line-height: 1; margin-bottom: 6px; }
+  .final-sub   { font-size: 16px; color: var(--texte-s); font-family: Arial, sans-serif; margin-bottom: 20px; }
+  .final-msg   { font-size: 15px; color: var(--texte); line-height: 1.6; margin-bottom: 28px; font-style: italic; }
+  .final-jauge {
+    display: flex; gap: 8px; justify-content: center; margin-bottom: 28px;
+  }
+  .jauge-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--gris-b);
+  }
+  .jauge-dot.ok  { background: var(--vert); }
+  .jauge-dot.ko  { background: var(--rouge-l); border: 1.5px solid var(--rouge); }
+
+  .btn-reset {
+    display: inline-block;
+    padding: 11px 28px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    border-radius: 8px;
+    border: 1.5px solid var(--bleu);
+    background: var(--blanc);
+    color: var(--bleu);
+    cursor: pointer;
+    font-weight: bold;
+    letter-spacing: .5px;
+    transition: background .15s, color .15s;
+  }
+  .btn-reset:hover { background: var(--bleu); color: var(--blanc); }
+
+  /* ── PIED DE PAGE ── */
+  .footer {
+    text-align: center;
+    margin-top: 3rem;
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+    color: var(--texte-s);
+    letter-spacing: .5px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-badge">Projet 15 — Cuisine auvergnate</div>
+    <h1>Hygiène &amp; Conservation<br>des produits frais</h1>
+    <p>Réponds à chaque question en cliquant sur la bonne réponse.</p>
+  </div>
+
+  <div class="prog-bar-wrap">
+    <span class="prog-label">Progression</span>
+    <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
+    <span class="prog-score" id="score-disp">0 / 7</span>
+  </div>
+
+  <div id="questions"></div>
+
+  <div class="final" id="final">
+    <div class="final-label">Score final</div>
+    <div class="final-score" id="final-score"></div>
+    <div class="final-sub" id="final-sub"></div>
+    <div class="final-jauge" id="final-jauge"></div>
+    <div class="final-msg" id="final-msg"></div>
+    <button class="btn-reset" onclick="reset()">↺ Recommencer</button>
+  </div>
+
+  <div class="footer">SEGPA HAS — Séquence Cuisine Auvergnate</div>
+
+</div>
+<script>
+const QS = [
+  {
+    q: "À quelle température doit-on conserver les produits laitiers frais (fromages, yaourts) ?",
+    opts: ["Entre 0°C et +4°C","Entre +5°C et +8°C","À température ambiante (environ 18°C)","Au congélateur (-18°C)"],
+    ans: 0,
+    ok: "Bonne réponse ! Les produits laitiers se conservent entre 0°C et +4°C, dans la zone la plus froide du réfrigérateur.",
+    ko: "Non. Les produits laitiers doivent être conservés entre 0°C et +4°C — c'est la zone froide du réfrigérateur."
+  },
+  {
+    q: "Qu'est-ce que la DLC sur une étiquette alimentaire ?",
+    opts: ["Date Légale de Conservation","Date Limite de Consommation","Délai de Livraison Certifié","Degré de Limite de Cuisson"],
+    ans: 1,
+    ok: "Exact ! DLC = Date Limite de Consommation. Passé cette date, le produit ne doit plus être consommé.",
+    ko: "Non. DLC signifie Date Limite de Consommation — c'est la date à ne pas dépasser pour éviter tout risque sanitaire."
+  },
+  {
+    q: "La saucisse sèche est entamée. Combien de jours maximum peut-on la conserver au réfrigérateur après ouverture ?",
+    opts: ["1 semaine","3 jours","2 semaines","Elle n'a pas besoin d'être réfrigérée"],
+    ans: 1,
+    ok: "Correct ! Une fois ouverte, la saucisse sèche se conserve 3 jours maximum au réfrigérateur entre 0°C et +4°C.",
+    ko: "Non. Après ouverture, la saucisse sèche doit être réfrigérée et consommée dans les 3 jours."
+  },
+  {
+    q: "Que signifie respecter la « marche en avant » dans la cuisine ?",
+    opts: [
+      "Avancer vite pour finir avant les autres",
+      "Éviter que les aliments propres entrent en contact avec les zones ou aliments sales",
+      "Toujours commencer par les légumes avant la viande",
+      "Marcher sans s'arrêter pendant la réalisation"
+    ],
+    ans: 1,
+    ok: "Parfait ! La marche en avant consiste à ne jamais revenir vers une zone contaminée — on sépare les zones sales et propres pour éviter les contaminations croisées.",
+    ko: "Non. La marche en avant signifie qu'on ne revient jamais vers une zone sale. C'est un principe fondamental pour éviter les contaminations croisées."
+  },
+  {
+    q: "Parmi ces actions, laquelle est INTERDITE avant de manipuler des aliments ?",
+    opts: [
+      "Se laver les mains avec du savon",
+      "Porter un tablier propre et une charlotte",
+      "Goûter avec les doigts directement dans la préparation",
+      "Attacher ses cheveux"
+    ],
+    ans: 2,
+    ok: "Très bien ! Goûter avec les doigts contamine la préparation. On utilise toujours une cuillère propre à usage unique.",
+    ko: "Non. L'action interdite est de goûter avec les doigts — cela contamine la préparation. On utilise toujours une cuillère propre."
+  },
+  {
+    q: "Un pot de yaourt a une DLC dépassée d'un jour. Que doit-on faire ?",
+    opts: [
+      "Le consommer quand même s'il semble normal",
+      "Le chauffer pour tuer les bactéries et le consommer",
+      "Ne pas le consommer et le jeter",
+      "Le conserver encore 2 jours si l'odeur est normale"
+    ],
+    ans: 2,
+    ok: "Bonne réponse ! Une DLC dépassée = produit à jeter, même s'il semble normal. Les bactéries ne se voient pas toujours.",
+    ko: "Non. Tout produit dont la DLC est dépassée doit être jeté sans exception — les bactéries ne se voient ni ne s'éliminent à la chaleur dans ce cas."
+  },
+  {
+    q: "Dans quel ordre doit-on ranger les aliments dans le réfrigérateur ?",
+    opts: [
+      "N'importe où, le froid est le même partout",
+      "Les produits laitiers en haut, la viande crue en bas dans le bac dédié",
+      "La viande crue en haut pour éviter qu'elle touche les légumes",
+      "Les fruits et légumes en haut, les yaourts en bas"
+    ],
+    ans: 1,
+    ok: "Correct ! La viande crue se place dans le bac du bas (le plus froid) pour éviter que ses jus coulent sur d'autres aliments.",
+    ko: "Non. La viande crue doit toujours aller dans le bac dédié du bas — zone la plus froide, et elle évite toute contamination par écoulement."
+  }
+];
+
+let answered = 0, correct = 0, results = [];
+
+function build() {
+  const c = document.getElementById('questions');
+  c.innerHTML = '';
+  QS.forEach((q, qi) => {
+    const d = document.createElement('div');
+    d.className = 'q-card';
+    d.id = 'card-' + qi;
+    d.innerHTML = `
+      <div class="q-header">
+        <span class="q-num">Q${qi+1}</span>
+        <span class="q-text">${q.q}</span>
+      </div>
+      <div class="options">
+        ${q.opts.map((o,oi)=>`
+          <button class="opt" onclick="answer(${qi},${oi})" id="opt-${qi}-${oi}">
+            <span class="opt-letter">${'ABCD'[oi]}</span>${o}
+          </button>`).join('')}
+      </div>
+      <div class="feedback" id="fb-${qi}"></div>`;
+    c.appendChild(d);
+  });
+}
+
+function answer(qi, oi) {
+  const q = QS[qi];
+  const ok = oi === q.ans;
+  if (ok) correct++;
+  answered++;
+  results[qi] = ok;
+
+  for (let i = 0; i < q.opts.length; i++) {
+    const b = document.getElementById('opt-' + qi + '-' + i);
+    b.disabled = true;
+    if (i === q.ans) b.classList.add(oi === q.ans ? 'correct' : 'reveal');
+    else if (i === oi && !ok) b.classList.add('wrong');
+  }
+
+  const fb = document.getElementById('fb-' + qi);
+  fb.className = 'feedback show ' + (ok ? 'ok' : 'ko');
+  fb.innerHTML = `<span class="fb-icon">${ok ? '✓' : '✗'}</span>${ok ? q.ok : q.ko}`;
+
+  const card = document.getElementById('card-' + qi);
+  card.classList.add(ok ? 'answered' : 'answered-wrong');
+
+  const pct = Math.round(answered / QS.length * 100);
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('score-disp').textContent = correct + ' / ' + QS.length;
+
+  if (answered === QS.length) {
+    setTimeout(showFinal, 500);
+  }
+}
+
+function showFinal() {
+  const fin = document.getElementById('final');
+  fin.className = 'final show';
+  document.getElementById('final-score').textContent = correct + ' / ' + QS.length;
+  document.getElementById('final-sub').textContent = 'sur ' + QS.length + ' questions';
+
+  const jauge = document.getElementById('final-jauge');
+  jauge.innerHTML = results.map(r => `<div class="jauge-dot ${r?'ok':'ko'}"></div>`).join('');
+
+  const msgs = [
+    [0, 3, "Continue à réviser les règles d'hygiène — relis tes fiches de séance !"],
+    [4, 5, "Pas mal ! Quelques règles restent à consolider."],
+    [6, 6, "Très bien ! Tu maîtrises l'essentiel des règles d'hygiène."],
+    [7, 7, "Excellent ! Toutes les règles d'hygiène et de conservation sont maîtrisées."]
+  ];
+  const m = msgs.find(([a, b]) => correct >= a && correct <= b);
+  document.getElementById('final-msg').textContent = m ? m[2] : '';
+
+  fin.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function reset() {
+  answered = 0; correct = 0; results = [];
+  document.getElementById('prog').style.width = '0%';
+  document.getElementById('score-disp').textContent = '0 / ' + QS.length;
+  document.getElementById('final').className = 'final';
+  build();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+build();
+</script>
+</body>
+</html>
